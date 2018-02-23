@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_search_bar/flutter_search_bar.dart';
+import 'package:unsplash_client/Keys.dart';
 
 void main() => runApp(new MyApp());
 
@@ -30,9 +31,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  // client_id for the Unsplash Api
-  String client_id =
-      'ab7804f9f2d18cddb6cdace2ae5e957bdd9deec3dd16ce1280e7069be81f6d33';
   List<String> urls = [];
 
   SearchBar searchBar;
@@ -58,7 +56,7 @@ class _MyHomePageState extends State<MyHomePage> {
     HttpClient httpClient = new HttpClient();
     httpClient.getUrl(Uri.parse(url)).then((request) {
       // pass the client_id in the header
-      request.headers.add('Authorization', 'Client-ID $client_id');
+      request.headers.add('Authorization', 'Client-ID ${Keys.UNSPLASH_API_CLIENT_ID}');
       // Then call close.
       return request.close();
     }).then((response) {
