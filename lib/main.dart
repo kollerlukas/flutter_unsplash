@@ -1,106 +1,87 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_search_bar/flutter_search_bar.dart';
-import 'package:unsplash_client/Keys.dart';
+import 'package:unsplash_client/Models.dart';
+import 'package:unsplash_client/UnsplashImageProvider.dart';
+import 'package:share/share.dart';
 
-void main() => runApp(new MyApp());
+void main() => runApp(new UnsplashClient());
 
-class MyApp extends StatelessWidget {
+class UnsplashClient extends StatelessWidget {
+  final String title = 'Unsplash Client';
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return new MaterialApp(
-      title: 'Unsplash Client',
+      title: title,
       theme: new ThemeData(
-        primarySwatch: Colors.grey,
+        scaffoldBackgroundColor: Colors.white,
+        primaryColor: Colors.white,
+        accentColor: Colors.white,
+        accentIconTheme: new IconThemeData(color: Colors.black87),
+        fontFamily: 'Roboto Mono',
+        textSelectionHandleColor: Colors.black87,
       ),
-      home: new MyHomePage(title: 'Home Page'),
+      home: new MyHomePage(title: title),
     );
   }
 }
 
+// HomePage
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-
   final String title;
+
+  MyHomePage({Key key, this.title}) : super(key: key);
 
   @override
   _MyHomePageState createState() => new _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  List<String> urls = [];
-
-  SearchBar searchBar;
+  List<UnsplashImage> images = [];
 
   @override
-  void initState() {
+  initState() {
     super.initState();
-    // init SearchBar
-    searchBar = new SearchBar(
-        inBar: false,
-        setState: setState,
-        onSubmitted: onSubmitted,
-        buildDefaultAppBar: buildAppBar
-    );
+    // initial Request
+    initialRequest();
   }
 
-  // get Image urls
-  void requestImages(String keyword) {
-    // Search for image associated with the keyword
-    String url =
-        'https://api.unsplash.com/search/photos?query=$keyword&per_page=100';
-
-    HttpClient httpClient = new HttpClient();
-    httpClient.getUrl(Uri.parse(url)).then((request) {
-      // pass the client_id in the header
-      request.headers.add('Authorization', 'Client-ID ${Keys.UNSPLASH_API_CLIENT_ID}');
-      // Then call close.
-      return request.close();
-    }).then((response) {
-      // Process the response.
-      if (response.statusCode == 200) {
-        // response: OK
-        // decode JSON
-        response.transform(UTF8.decoder).join().then((String json) {
-          var data = JSON.decode(json);
-          // extract urls from the JSON
-          List<String> urls =
-              new List<String>.generate(data['results'].length, (index) {
-            return data['results'][index]['urls']['small'];
-          });
-          // set the State
-          setState(() {
-            this.urls = urls;
-          });
-        });
-      } else {
-        // something went wrong :(
-        print("Http error: ${response.statusCode}");
-      }
+  initialRequest() async {
+    List<UnsplashImage> images = await UnsplashImageProvider.requestImages();
+    setState(() {
+      this.images = images;
     });
   }
 
-  // For the SearchBar
-  AppBar buildAppBar(BuildContext context) {
-    return new AppBar(
-        title: new Text('Unsplash Wallpapers'),
-        actions: [searchBar.getSearchAction(context)]);
-  }
-
-  // callback for the SearchBar
-  void onSubmitted(String keyword) {
-    // search for images associated to the keyword
-    requestImages(keyword);
+  requestByKeyWord(String keyword) async {
+    List<UnsplashImage> images =
+        await UnsplashImageProvider.requestImagesWithKeyword(keyword);
+    setState(() {
+      this.images = images;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
       // set SearchBar as AppBar
-      appBar: searchBar.build(context),
+      appBar: new AppBar(
+        leading: new Icon(
+          Icons.search,
+          color: Colors.black87,
+        ),
+        title: new TextField(
+          keyboardType: TextInputType.text,
+          decoration: new InputDecoration(
+              hintText: 'Search',
+              hintStyle: new TextStyle(color: Colors.black54, fontSize: 17.0),
+              border: null),
+          onSubmitted: (String keyword) {
+            // search for images associated to the keyword
+            requestByKeyWord(keyword);
+          },
+        ),
+      ),
       // GridView
       body: new GridView.count(
         // 2 column
@@ -110,11 +91,96 @@ class _MyHomePageState extends State<MyHomePage> {
         mainAxisSpacing: 10.0,
         crossAxisSpacing: 10.0,
         // init the individual ImageViews
-        children: new List<Widget>.generate(urls.length, (index) {
+        children: new List<Widget>.generate(images.length, (index) {
           return new GridTile(
-              child: new Card(
-                  child: new Image.network(urls[index], fit: BoxFit.cover)));
+              child: new InkWell(
+            onTap: () {
+              Navigator.of(context).push(
+                new MaterialPageRoute<Null>(
+                  builder: (BuildContext context) {
+                    return new ImagePage(image: images[index]);
+                  },
+                ),
+              );
+            },
+            // Main route
+            child: new Hero(
+                tag: '${images[index].getId()}',
+                child: new Image.network(images[index].getRegularUrl(),
+                    fit: BoxFit.cover)),
+          ));
         }),
+      ),
+    );
+  }
+}
+
+// ImagePage
+class ImagePage extends StatefulWidget {
+  final UnsplashImage image;
+
+  ImagePage({Key key, this.image}) : super(key: key);
+
+  @override
+  _ImagePageState createState() => new _ImagePageState();
+}
+
+class _ImagePageState extends State<ImagePage> {
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold(
+      body: new ListView(children: <Widget>[
+        new Stack(
+          children: <Widget>[
+            new Hero(
+              tag: '${widget.image.getId()}',
+              child: new Image.network(widget.image.getRegularUrl(),
+                  fit: BoxFit.cover),
+            ),
+            new IconButton(
+                icon: new Icon(
+                  Icons.arrow_back,
+                  color: Colors.white70,
+                ),
+                onPressed: (() {
+                  Navigator.pop(context);
+                }))
+          ],
+        ),
+        new Row(
+          children: <Widget>[
+            new Container(
+              margin: new EdgeInsets.all(8.0),
+              width: 50.0,
+              height: 50.0,
+              decoration: new BoxDecoration(
+                  image: new DecorationImage(
+                      image: new NetworkImage(
+                          widget.image.getUser().getLargeProfileImage()),
+                      fit: BoxFit.cover),
+                  borderRadius:
+                      new BorderRadius.all(new Radius.circular(25.0))),
+            ),
+            new Text(
+              '${widget.image.getUser().getFirstName()} ${widget.image
+                  .getUser()
+                  .getLastName()}',
+              style: new TextStyle(
+                fontSize: 17.0,
+              ),
+            )
+          ],
+        )
+      ]),
+      floatingActionButton: new FloatingActionButton(
+        onPressed: (() {
+          print('downloadImage()');
+          //UnsplashImageProvider.downloadImage(widget.image);
+        }),
+        tooltip: 'Download Image',
+        child: new Icon(
+          Icons.file_download,
+        ),
       ),
     );
   }

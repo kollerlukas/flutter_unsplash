@@ -1,4 +1,4 @@
-package com.yourcompany.unsplashclient;
+package us.koller.unsplashclient;
 
 import android.os.Bundle;
 
