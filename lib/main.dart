@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:unsplash_client/Models.dart';
 import 'package:unsplash_client/UnsplashImageProvider.dart';
-import 'package:share/share.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 void main() => runApp(new UnsplashClient());
 
@@ -64,26 +64,27 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      // set SearchBar as AppBar
-      appBar: new AppBar(
-        leading: new Icon(
-          Icons.search,
-          color: Colors.black87,
+        // set SearchBar as AppBar
+        appBar: new AppBar(
+          leading: new Icon(
+            Icons.search,
+            color: Colors.black87,
+          ),
+          title: new TextField(
+            keyboardType: TextInputType.text,
+            decoration: new InputDecoration(
+                hintText: 'Search',
+                hintStyle: new TextStyle(color: Colors.black54, fontSize: 17.0),
+                border: null),
+            onSubmitted: (String keyword) {
+              // search for images associated to the keyword
+              requestByKeyWord(keyword);
+            },
+          ),
         ),
-        title: new TextField(
-          keyboardType: TextInputType.text,
-          decoration: new InputDecoration(
-              hintText: 'Search',
-              hintStyle: new TextStyle(color: Colors.black54, fontSize: 17.0),
-              border: null),
-          onSubmitted: (String keyword) {
-            // search for images associated to the keyword
-            requestByKeyWord(keyword);
-          },
-        ),
-      ),
-      // GridView
-      body: new GridView.count(
+        // GridView
+        /*body:
+            new GridView.count(
         // 2 column
         crossAxisCount: 2,
         // some padding
@@ -110,8 +111,33 @@ class _MyHomePageState extends State<MyHomePage> {
                     fit: BoxFit.cover)),
           ));
         }),
-      ),
-    );
+      ),*/
+        body: new StaggeredGridView.countBuilder(
+          crossAxisCount: 2,
+          itemCount: images.length,
+          itemBuilder: (BuildContext context, int index) => new InkWell(
+                onTap: () {
+                  Navigator.of(context).push(
+                    new MaterialPageRoute<Null>(
+                      builder: (BuildContext context) {
+                        return new ImagePage(image: images[index]);
+                      },
+                    ),
+                  );
+                },
+                // Main route
+                child: new Hero(
+                    tag: '${images[index].getId()}',
+                    child: new Image.network(images[index].getRegularUrl(),
+                        fit: BoxFit.cover)),
+              ),
+          staggeredTileBuilder: (int index) {
+            return new StaggeredTile.count(1, 1);
+          },
+          mainAxisSpacing: 15.0,
+          crossAxisSpacing: 15.0,
+          padding: const EdgeInsets.all(15.0),
+        ));
   }
 }
 
@@ -125,62 +151,45 @@ class ImagePage extends StatefulWidget {
   _ImagePageState createState() => new _ImagePageState();
 }
 
-class _ImagePageState extends State<ImagePage> {
+class _ImagePageState extends State<ImagePage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      body: new ListView(children: <Widget>[
-        new Stack(
-          children: <Widget>[
-            new Hero(
+      backgroundColor: Colors.black,
+      body: new Stack(
+        children: <Widget>[
+          new Center(
+            child: new Hero(
               tag: '${widget.image.getId()}',
               child: new Image.network(widget.image.getRegularUrl(),
                   fit: BoxFit.cover),
             ),
-            new IconButton(
+          ),
+          new AppBar(
+            elevation: 0.0,
+            backgroundColor: Colors.transparent,
+            leading: new IconButton(
                 icon: new Icon(
                   Icons.arrow_back,
-                  color: Colors.white70,
+                  color: Colors.white,
                 ),
                 onPressed: (() {
                   Navigator.pop(context);
-                }))
-          ],
-        ),
-        new Row(
-          children: <Widget>[
-            new Container(
-              margin: new EdgeInsets.all(8.0),
-              width: 50.0,
-              height: 50.0,
-              decoration: new BoxDecoration(
-                  image: new DecorationImage(
-                      image: new NetworkImage(
-                          widget.image.getUser().getLargeProfileImage()),
-                      fit: BoxFit.cover),
-                  borderRadius:
-                      new BorderRadius.all(new Radius.circular(25.0))),
-            ),
-            new Text(
-              '${widget.image.getUser().getFirstName()} ${widget.image
-                  .getUser()
-                  .getLastName()}',
-              style: new TextStyle(
-                fontSize: 17.0,
-              ),
-            )
-          ],
-        )
-      ]),
-      floatingActionButton: new FloatingActionButton(
-        onPressed: (() {
-          print('downloadImage()');
-          //UnsplashImageProvider.downloadImage(widget.image);
-        }),
-        tooltip: 'Download Image',
-        child: new Icon(
-          Icons.file_download,
-        ),
+                })),
+            actions: <Widget>[
+              new IconButton(
+                  icon: new Icon(
+                    Icons.cloud_download,
+                    color: Colors.white,
+                  ),
+                  tooltip: 'Download',
+                  onPressed: (() {
+                    Scaffold.of(context).showSnackBar(
+                        new SnackBar(content: new Text('Download...')));
+                  }))
+            ],
+          ),
+        ],
       ),
     );
   }
