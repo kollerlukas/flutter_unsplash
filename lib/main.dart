@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:unsplash_client/Models.dart';
 import 'package:unsplash_client/UnsplashImageProvider.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 void main() => runApp(new UnsplashClient());
 
@@ -83,35 +85,6 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ),
         // GridView
-        /*body:
-            new GridView.count(
-        // 2 column
-        crossAxisCount: 2,
-        // some padding
-        padding: const EdgeInsets.all(10.0),
-        mainAxisSpacing: 10.0,
-        crossAxisSpacing: 10.0,
-        // init the individual ImageViews
-        children: new List<Widget>.generate(images.length, (index) {
-          return new GridTile(
-              child: new InkWell(
-            onTap: () {
-              Navigator.of(context).push(
-                new MaterialPageRoute<Null>(
-                  builder: (BuildContext context) {
-                    return new ImagePage(image: images[index]);
-                  },
-                ),
-              );
-            },
-            // Main route
-            child: new Hero(
-                tag: '${images[index].getId()}',
-                child: new Image.network(images[index].getRegularUrl(),
-                    fit: BoxFit.cover)),
-          ));
-        }),
-      ),*/
         body: new StaggeredGridView.countBuilder(
           crossAxisCount: 2,
           itemCount: images.length,
@@ -179,13 +152,12 @@ class _ImagePageState extends State<ImagePage> with TickerProviderStateMixin {
             actions: <Widget>[
               new IconButton(
                   icon: new Icon(
-                    Icons.cloud_download,
+                    Icons.open_in_browser,
                     color: Colors.white,
                   ),
-                  tooltip: 'Download',
+                  tooltip: 'Open in Browser',
                   onPressed: (() {
-                    Scaffold.of(context).showSnackBar(
-                        new SnackBar(content: new Text('Download...')));
+                    launch(widget.image.getDownloadLink());
                   }))
             ],
           ),
