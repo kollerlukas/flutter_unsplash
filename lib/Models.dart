@@ -1,4 +1,4 @@
-// Model for Unsplash Image
+/// Model for Unsplash Image
 class UnsplashImage {
   var data;
 
@@ -85,7 +85,7 @@ class UnsplashImage {
   }
 }
 
-// Model for Unsplash User
+/// Model for Unsplash User
 class UnsplashUser {
   var data;
 

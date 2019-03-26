@@ -28,7 +28,8 @@ class UnsplashClient extends StatelessWidget {
   }
 }
 
-// HomePage
+/// Home Page
+/// Showing a collection of unsplash images.
 class MyHomePage extends StatefulWidget {
   final String title;
 
@@ -38,27 +39,37 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => new _MyHomePageState();
 }
 
+/// State for HomePage
 class _MyHomePageState extends State<MyHomePage> {
+  // store images fetched from unplash
   List<UnsplashImage> images = [];
 
   @override
   initState() {
     super.initState();
     // initial Request
-    initialRequest();
+    requestImages();
   }
 
-  initialRequest() async {
+  /// request images from unsplash and update the UI
+  requestImages() async {
+    // request images from unplash
     List<UnsplashImage> images = await UnsplashImageProvider.requestImages();
+    // update UI => set state
     setState(() {
+      // set new fetched images
       this.images = images;
     });
   }
 
-  requestByKeyWord(String keyword) async {
+  /// request images from unsplash and update the UI
+  requestImagesWithKeyword(String keyword) async {
+    // request images with a keyword
     List<UnsplashImage> images =
         await UnsplashImageProvider.requestImagesWithKeyword(keyword);
+    // update UI => set state
     setState(() {
+      // set new fetched images
       this.images = images;
     });
   }
@@ -79,8 +90,13 @@ class _MyHomePageState extends State<MyHomePage> {
                 hintStyle: new TextStyle(color: Colors.black54, fontSize: 17.0),
                 border: null),
             onSubmitted: (String keyword) {
-              // search for images associated to the keyword
-              requestByKeyWord(keyword);
+              if (keyword == "") {
+                // no keyword entered => show regular images
+                requestImages();
+              } else {
+                // search and display images associated to the keyword
+                requestImagesWithKeyword(keyword);
+              }
             },
           ),
         ),
@@ -114,7 +130,8 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-// ImagePage
+/// ImagePage
+/// Showing an individual image.
 class ImagePage extends StatefulWidget {
   final UnsplashImage image;
 
@@ -124,6 +141,7 @@ class ImagePage extends StatefulWidget {
   _ImagePageState createState() => new _ImagePageState();
 }
 
+/// State for ImagePage
 class _ImagePageState extends State<ImagePage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
@@ -131,13 +149,10 @@ class _ImagePageState extends State<ImagePage> with TickerProviderStateMixin {
       backgroundColor: Colors.black,
       body: new Stack(
         children: <Widget>[
-          new Center(
-            child: new Hero(
-              tag: '${widget.image.getId()}',
-              child: new Image.network(widget.image.getRegularUrl(),
-                  fit: BoxFit.cover),
-            ),
-          ),
+          Center(
+              child: new Hero(
+                  tag: '${widget.image.getId()}',
+                  child: Image.network(widget.image.getRegularUrl()))),
           new AppBar(
             elevation: 0.0,
             backgroundColor: Colors.transparent,
