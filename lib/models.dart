@@ -41,7 +41,7 @@ class UnsplashImage {
   }
 
   UnsplashUser getUser() {
-    return new UnsplashUser(data['user']);
+    return UnsplashUser(data['user']);
   }
 
   getUrls() {

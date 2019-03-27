@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:unsplash_client/Keys.dart';
-import 'package:unsplash_client/Models.dart';
+import 'package:unsplash_client/keys.dart';
+import 'package:unsplash_client/models.dart';
 
 /// Helper class to interact with the Unsplash Api and provide images.
 class UnsplashImageProvider {
@@ -14,8 +14,8 @@ class UnsplashImageProvider {
     var data = await _getImageData(url);
     // generate UnsplashImage List from received data
     List<UnsplashImage> images =
-        new List<UnsplashImage>.generate(data.length, (index) {
-      return new UnsplashImage(data[index]);
+        List<UnsplashImage>.generate(data.length, (index) {
+      return UnsplashImage(data[index]);
     });
     // return images
     return images;
@@ -32,8 +32,8 @@ class UnsplashImageProvider {
     var data = await _getImageData(url);
     // generate UnsplashImage List from received data
     List<UnsplashImage> images =
-        new List<UnsplashImage>.generate(data['results'].length, (index) {
-      return new UnsplashImage(data['results'][index]);
+        List<UnsplashImage>.generate(data['results'].length, (index) {
+      return UnsplashImage(data['results'][index]);
     });
     // return Images
     return images;
@@ -44,7 +44,7 @@ class UnsplashImageProvider {
   /// @return received data
   static _getImageData(String url) async {
     // setup http client
-    HttpClient httpClient = new HttpClient();
+    HttpClient httpClient = HttpClient();
     // setup http request
     HttpClientRequest request = await httpClient.getUrl(Uri.parse(url));
     // pass the client_id in the header
