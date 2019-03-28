@@ -4,175 +4,232 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:unsplash_client/image_page.dart';
 import 'package:unsplash_client/models.dart';
 import 'package:unsplash_client/unsplash_image_provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
-/// MainPage
-/// Showing a collection of trending unsplash images.
+/// Screen for showing a collection of trending [UnsplashImage].
 class MainPage extends StatefulWidget {
   @override
   _MainPageState createState() => _MainPageState();
 }
 
-/// State for MainPage
+/// Provide a state for [MainPage].
 class _MainPageState extends State<MainPage> {
-  /// images fetched from unsplash
+  /// Stores the current page index for the api requests.
+  int page = 0;
+
+  /// Stores the currently loaded loaded images.
   List<UnsplashImage> images = [];
 
-  /// searched keyword
+  /// States whether there is currently a task running loading images.
+  bool loadingImages = false;
+
+  /// Stored the currently searched keyword.
   String keyword;
 
   @override
   initState() {
     super.initState();
     // initial image Request
-    _requestImages();
+    _loadImages();
   }
 
-  /// request images from unsplash and update the UI
-  _requestImages() async {
-    // display loading indicator
+  /// Resets the state to the inital state.
+  _resetImages() {
+    // clear image list
+    images = [];
+    // reset page counter
+    page = 0;
+    // reset keyword
+    keyword = null;
+    // show regular images
+    _loadImages();
+  }
+
+  /// Requests a list of [UnsplashImage] for a given [keyword].
+  /// If the given [keyword] is null, trending images are loaded.
+  _loadImages({String keyword}) async {
+    // check if there is currently a loading task running
+    if (loadingImages) {
+      // there is currently a task running
+      return;
+    }
+    debugPrint("_loadImages() called, page=$page");
+    // set loading state
     setState(() {
-      // set new fetched images
-      this.images = [];
+      // set loading
+      loadingImages = true;
       // keyword null
-      this.keyword = null;
-    });
-    // request images from unplash
-    List<UnsplashImage> images = await UnsplashImageProvider.requestImages();
-    // update UI => set state
-    setState(() {
-      // set new fetched images
-      this.images = images;
-    });
-  }
-
-  /// request images from unsplash and update the UI
-  _requestImagesWithKeyword(String keyword) async {
-    // display loading indicator
-    setState(() {
-      // set new fetched images
-      this.images = [];
-      // set searched keyword
       this.keyword = keyword;
     });
-    // request images with a keyword
-    List<UnsplashImage> images =
-        await UnsplashImageProvider.requestImagesWithKeyword(keyword);
-    // update UI => set state
+
+    // load images
+    List<UnsplashImage> images;
+    if (keyword == null) {
+      // load images from the next page of trending images
+      images = await UnsplashImageProvider.loadImages(page: ++page);
+    } else {
+      // load images from the next page with a keyword
+      images = await UnsplashImageProvider.loadImagesWithKeyword(keyword,
+          page: ++page);
+    }
+
+    if (images == []) {
+      // error
+      // TODO: handle errors
+    }
+
+    // update the state
     setState(() {
-      // set new fetched images
-      this.images = images;
+      // done loading
+      loadingImages = false;
+      // set new loaded images
+      this.images.addAll(images);
     });
   }
 
-  /// reset from the searched state
-  _resetSearchedState() {
-    // show regular images
-    _requestImages();
-  }
-
-  /// return the SearchAppBar
-  _getSearchAppBar() {
-    if (keyword != null) {
-      return SliverAppBar(
-        title: TextField(
-          keyboardType: TextInputType.text,
-          decoration: InputDecoration(
-              hintText: 'Search...',
-              hintStyle: TextStyle(color: Colors.black54, fontSize: 17.0),
-              border: InputBorder.none),
-          onSubmitted: (String keyword) {
-            // search and display images associated to the keyword
-            _requestImagesWithKeyword(keyword);
-          },
-          autofocus: true,
-        ),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.clear),
-            color: Colors.black87,
-            onPressed: () {
-              /* reset the state */
-              _resetSearchedState();
-            },
-          )
-        ],
-        backgroundColor: Colors.grey[50],
-      );
+  /// Asynchronously loads a [UnsplashImage] for a given [index].
+  Future<UnsplashImage> _loadImage(int index) async {
+    if (index < images.length) {
+      return images[index];
     } else {
-      return SliverAppBar(
-        title:
-            Text('Flutter Unsplash', style: TextStyle(color: Colors.black87)),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.search),
-            color: Colors.black87,
-            onPressed: () {
-              /* go into searching state */
-              setState(() {
-                keyword = "";
-              });
-            },
-          )
-        ],
-        backgroundColor: Colors.grey[50],
-      );
+      // TODO: load more images
+      //return images[index % images.length];
+      // load more images
+      _loadImages(keyword: keyword);
     }
   }
-
-  /// return the loading indicator widget that is displayed during loading
-  _getLoadingIndicatorWidget() => Center(
-        child: CircularProgressIndicator(),
-      );
-
-  /// return the grid with the loaded images
-  _getImageGridWidget() => OrientationBuilder(
-        builder: (context, orientation) {
-          return StaggeredGridView.countBuilder(
-            crossAxisCount: orientation == Orientation.portrait ? 2 : 3,
-            itemCount: images.length,
-            itemBuilder: (BuildContext context, int index) => InkWell(
-                  onTap: () {
-                    /* item onclick */
-                    Navigator.of(context).push(
-                      MaterialPageRoute<Null>(
-                        builder: (BuildContext context) {
-                          /* open image Page */
-                          return ImagePage(image: images[index]);
-                        },
-                      ),
-                    );
-                  },
-                  // Main route
-                  child: Hero(
-                    tag: '${images[index].getId()}',
-                    child: ClipRRect(
-                        borderRadius: BorderRadius.circular(4.0),
-                        child: Image.network(images[index].getSmallUrl(),
-                            fit: BoxFit.cover)),
-                  ),
-                ),
-            staggeredTileBuilder: (int index) {
-              return StaggeredTile.fit(1);
-            },
-            mainAxisSpacing: 15.0,
-            crossAxisSpacing: 15.0,
-            padding: const EdgeInsets.all(15.0),
-          );
-        },
-      );
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: NestedScrollView(
-            headerSliverBuilder:
-                (BuildContext context, bool innerBoxIsScrolled) {
-              return <Widget>[_getSearchAppBar()];
-            },
-            // GridView
-            /* either display loading indicator or Image grid */
-            body: images.isEmpty
-                ? _getLoadingIndicatorWidget()
-                : _getImageGridWidget()));
+        body: OrientationBuilder(
+            builder: (context, orientation) => CustomScrollView(
+                    // put AppBar in NestedScrollView to have it sliver off on scrolling
+                    slivers: <Widget>[
+                  _buildSearchAppBar(),
+                  _buildImageGrid(orientation: orientation),
+                  // loading indicator at the bottom of the list
+                  loadingImages
+                      ? SliverToBoxAdapter(
+                          child: _buildLoadingIndicator(),
+                        )
+                      : null,
+                  // filter null views
+                ].where((w) => w != null).toList())));
   }
+
+  /// Returns the SearchAppBar.
+  Widget _buildSearchAppBar() => SliverAppBar(
+        title: keyword != null
+            ?
+            // either search-field or just the title
+            TextField(
+                keyboardType: TextInputType.text,
+                decoration: InputDecoration(
+                    hintText: 'Search...',
+                    hintStyle: TextStyle(color: Colors.black54, fontSize: 17.0),
+                    border: InputBorder.none),
+                onSubmitted: (String keyword) =>
+                    // search and display images associated to the keyword
+                    _loadImages(keyword: keyword),
+                autofocus: true,
+              )
+            : const Text('Flutter Unsplash',
+                style: TextStyle(color: Colors.black87)),
+        actions: <Widget>[
+          // either search oder clear button
+          keyword != null
+              ? IconButton(
+                  icon: Icon(Icons.clear),
+                  color: Colors.black87,
+                  onPressed: () {
+                    // reset the state
+                    _resetImages();
+                  },
+                )
+              : IconButton(
+                  icon: Icon(Icons.search),
+                  color: Colors.black87,
+                  onPressed: () =>
+                      // go into searching state
+                      setState(() => keyword = ""),
+                )
+        ],
+        backgroundColor: Colors.grey[50],
+      );
+
+  /// Returns the loading indicator widget that is displayed during loading.
+  Widget _buildLoadingIndicator() => const Center(
+          child: Padding(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(Colors.black87),
+        ),
+        padding: const EdgeInsets.all(16.0),
+      ));
+
+  /// Returns the grid that displays images.
+  /// [orientation] can be used to adjust the grid column count.
+  Widget _buildImageGrid({orientation = Orientation.portrait}) => SliverPadding(
+        padding: const EdgeInsets.all(16.0),
+        sliver: SliverStaggeredGrid.countBuilder(
+          // set column count
+          crossAxisCount: orientation == Orientation.portrait ? 2 : 3,
+          itemCount: images.length,
+          // set itemBuilder
+          itemBuilder: (BuildContext context, int index) =>
+              _buildImageItemBuilder(index),
+          staggeredTileBuilder: (int index) => StaggeredTile.fit(1)
+              /*StaggeredTile.count(1, 1)*/,
+          mainAxisSpacing: 16.0,
+          crossAxisSpacing: 16.0,
+        ),
+      );
+
+  /// Returns a FutureBuilder to load a [UnsplashImage] for a given [index].
+  Widget _buildImageItemBuilder(int index) => FutureBuilder(
+        // pass image loader
+        future: _loadImage(index),
+        builder: (context, snapshot) =>
+            // image loaded return InkWell
+            _buildImageCard(snapshot.data),
+      );
+
+  /// Adds rounded corners to a given [widget].
+  Widget _addRoundedCorners(Widget widget) =>
+      // wrap in ClipRRect to achieve rounded corners
+      ClipRRect(borderRadius: BorderRadius.circular(4.0), child: widget);
+
+  /// Returns a placeholder to show until an image is loaded.
+  Widget _buildImagePlaceholder() => _addRoundedCorners(
+        Container(
+          color: Colors.grey[200],
+          child: _buildLoadingIndicator(),
+        ),
+      );
+
+  /// Build a card for displaying a given [image].
+  /// If given [image] is null then a grey placeholder is displayed.
+  Widget _buildImageCard(UnsplashImage image) => InkWell(
+        onTap: () {
+          // item onclick
+          Navigator.of(context).push(
+            MaterialPageRoute<Null>(
+              builder: (BuildContext context) =>
+                  // open [ImagePage] with the given image
+                  ImagePage(image: image),
+            ),
+          );
+        },
+        // Hero Widget for Hero animation with [ImagePage]
+        child: image != null
+            ? Hero(
+                tag: '${image?.getId()}',
+                child: _addRoundedCorners(CachedNetworkImage(
+                  imageUrl: image?.getSmallUrl(),
+                  placeholder: (context, url) => _buildImagePlaceholder(),
+                  fit: BoxFit.cover,
+                )),
+              )
+            : _buildImagePlaceholder(),
+      );
 }

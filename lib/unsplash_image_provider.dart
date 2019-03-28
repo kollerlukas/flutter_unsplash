@@ -4,12 +4,14 @@ import 'dart:io';
 import 'package:unsplash_client/keys.dart';
 import 'package:unsplash_client/models.dart';
 
-/// Helper class to interact with the Unsplash Api and provide images.
+/// Helper class to interact with the Unsplash Api and provide [UnsplashImage].
 class UnsplashImageProvider {
-  /// asynchronously request images from unsplash.
-  /// @return received images
-  static requestImages() async {
-    String url = 'https://api.unsplash.com/photos?page=1&per_page=100';
+  /// Asynchronously load a list of trending [UnsplashImage].
+  /// [page] is the page index for the api request.
+  /// [perPage] sets the length of the returned list.
+  static Future<List<UnsplashImage>> loadImages(
+      {int page = 1, int perPage = 100}) async {
+    String url = 'https://api.unsplash.com/photos?page=$page&per_page=$perPage';
     // receive image data from unsplash
     var data = await _getImageData(url);
     // generate UnsplashImage List from received data
@@ -21,13 +23,14 @@ class UnsplashImageProvider {
     return images;
   }
 
-  /// asynchronously request images from unsplash associated to a given keyword.
-  /// @param keyword
-  /// @return received images
-  static requestImagesWithKeyword(String keyword) async {
+  /// Asynchronously load a list of [UnsplashImage] associated to a given [keyword].
+  /// [page] is the page index for the api request.
+  /// [perPage] sets the length of the returned list.
+  static Future<List<UnsplashImage>> loadImagesWithKeyword(String keyword,
+      {int page = 1, int perPage = 100}) async {
     // Search for image associated with the keyword
     String url =
-        'https://api.unsplash.com/search/photos?query=$keyword&page=1&per_page=100&order_by=popular';
+        'https://api.unsplash.com/search/photos?query=$keyword&page=$page&per_page=$perPage&order_by=popular';
     // receive image data from unsplash associated to the given keyword
     var data = await _getImageData(url);
     // generate UnsplashImage List from received data
@@ -39,10 +42,8 @@ class UnsplashImageProvider {
     return images;
   }
 
-  /// receive image data from a given url and decode JSON
-  /// @param url
-  /// @return received data
-  static _getImageData(String url) async {
+  /// Receive image data from a given [url] and return the JSON decoded the data.
+  static dynamic _getImageData(String url) async {
     // setup http client
     HttpClient httpClient = HttpClient();
     // setup http request
