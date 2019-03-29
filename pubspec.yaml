@@ -6,10 +6,6 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # for icons
-  cupertino_icons: ^0.1.2
-  # share images
-  share: ^0.6.0
   # display images in staggered grid
   flutter_staggered_grid_view: ^0.2.7
   # open url for an image
@@ -18,6 +14,8 @@ dependencies:
   cached_network_image: ^0.7.0
   # zoom images
   photo_view: ^0.2.2
+  # icons
+  outline_material_icons: ^0.1.0
 
 dev_dependencies:
   flutter_test:

@@ -7,10 +7,11 @@ import 'package:unsplash_client/models.dart';
 /// Helper class to interact with the Unsplash Api and provide [UnsplashImage].
 class UnsplashImageProvider {
   /// Asynchronously load a list of trending [UnsplashImage].
+  /// Returns a list of [UnsplashImage].
   /// [page] is the page index for the api request.
   /// [perPage] sets the length of the returned list.
-  static Future<List<UnsplashImage>> loadImages(
-      {int page = 1, int perPage = 100}) async {
+  static Future<List> loadImages(
+      {int page = 1, int perPage = 10}) async {
     String url = 'https://api.unsplash.com/photos?page=$page&per_page=$perPage';
     // receive image data from unsplash
     var data = await _getImageData(url);
@@ -24,10 +25,11 @@ class UnsplashImageProvider {
   }
 
   /// Asynchronously load a list of [UnsplashImage] associated to a given [keyword].
+  /// Returns a list where the first element is the [totalPages] available and the second element is a list of [UnsplashImage].
   /// [page] is the page index for the api request.
   /// [perPage] sets the length of the returned list.
-  static Future<List<UnsplashImage>> loadImagesWithKeyword(String keyword,
-      {int page = 1, int perPage = 100}) async {
+  static Future<List> loadImagesWithKeyword(String keyword,
+      {int page = 1, int perPage = 10}) async {
     // Search for image associated with the keyword
     String url =
         'https://api.unsplash.com/search/photos?query=$keyword&page=$page&per_page=$perPage&order_by=popular';
@@ -38,8 +40,9 @@ class UnsplashImageProvider {
         List<UnsplashImage>.generate(data['results'].length, (index) {
       return UnsplashImage(data['results'][index]);
     });
+    int totalPages = data['total_pages'];
     // return Images
-    return images;
+    return [totalPages, images];
   }
 
   /// Receive image data from a given [url] and return the JSON decoded the data.

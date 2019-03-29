@@ -1,8 +1,11 @@
+import 'dart:math';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:unsplash_client/models.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:outline_material_icons/outline_material_icons.dart';
 
 /// Screen for showing an individual [UnsplashImage].
 class ImagePage extends StatefulWidget {
@@ -29,15 +32,24 @@ class _ImagePageState extends State<ImagePage> {
             IconButton(
                 icon: Icon(
                   Icons.arrow_back,
-                  color: Colors.white70,
+                  color: Colors.white,
                 ),
                 onPressed: () => Navigator.pop(context)),
         actions: <Widget>[
+          // show image info
+          IconButton(
+              icon: Icon(
+                Icons.info_outline,
+                color: Colors.white,
+              ),
+              tooltip: 'Image Info',
+              onPressed: () => //TODO
+                  null),
           // open in browser icon button
           IconButton(
               icon: Icon(
                 Icons.open_in_browser,
-                color: Colors.white70,
+                color: Colors.white,
               ),
               tooltip: 'Open in Browser',
               onPressed: () =>
@@ -45,10 +57,14 @@ class _ImagePageState extends State<ImagePage> {
                   launch(widget.image.getDownloadLink())),
           // set as wallpaper */
           IconButton(
-            icon: Icon(
-              Icons.file_download,
-              color: Colors.white70,
+            icon: Transform.rotate(
+              angle: pi,
+              child: Icon(
+                OMIcons.publish /*Icons.file_download*/,
+                color: Colors.white,
+              ),
             ),
+            tooltip: 'Download Image',
             onPressed: () =>
                 // download image
                 _downloadImage(),

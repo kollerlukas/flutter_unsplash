@@ -15,7 +15,7 @@ class MainPage extends StatefulWidget {
 /// Provide a state for [MainPage].
 class _MainPageState extends State<MainPage> {
   /// Stores the current page index for the api requests.
-  int page = 0;
+  int page = 0, totalPages = -1;
 
   /// Stores the currently loaded loaded images.
   List<UnsplashImage> images = [];
@@ -39,6 +39,7 @@ class _MainPageState extends State<MainPage> {
     images = [];
     // reset page counter
     page = 0;
+    totalPages = -1;
     // reset keyword
     keyword = null;
     // show regular images
@@ -53,11 +54,24 @@ class _MainPageState extends State<MainPage> {
       // there is currently a task running
       return;
     }
-    debugPrint("_loadImages() called, page=$page");
+    // check if all pages are already loaded
+    if (totalPages != -1 && page >= totalPages) {
+      // all pages already loaded
+      return;
+    }
     // set loading state
+    // delay setState, otherwise: Unhandled Exception: setState() or markNeedsBuild() called during build.
+    await Future.delayed(Duration(microseconds: 1));
     setState(() {
       // set loading
       loadingImages = true;
+      // check if new search
+      if (this.keyword != keyword) {
+        // clear images for new search
+        this.images = [];
+        // reset page counter
+        this.page = 0;
+      }
       // keyword null
       this.keyword = keyword;
     });
@@ -69,14 +83,15 @@ class _MainPageState extends State<MainPage> {
       images = await UnsplashImageProvider.loadImages(page: ++page);
     } else {
       // load images from the next page with a keyword
-      images = await UnsplashImageProvider.loadImagesWithKeyword(keyword,
+      List res = await UnsplashImageProvider.loadImagesWithKeyword(keyword,
           page: ++page);
+      // set totalPages
+      totalPages = res[0];
+      // set images
+      images = res[1];
     }
 
-    if (images == []) {
-      // error
-      // TODO: handle errors
-    }
+    // TODO: handle errors
 
     // update the state
     setState(() {
@@ -89,14 +104,13 @@ class _MainPageState extends State<MainPage> {
 
   /// Asynchronously loads a [UnsplashImage] for a given [index].
   Future<UnsplashImage> _loadImage(int index) async {
-    if (index < images.length) {
-      return images[index];
-    } else {
-      // TODO: load more images
-      //return images[index % images.length];
-      // load more images
+    // check if new images need to be loaded
+    if (index >= images.length - 2) {
+      // Reached the end of the list. Try to load more images.
       _loadImages(keyword: keyword);
     }
+
+    return index < images.length ? images[index] : null;
   }
 
   @override
@@ -111,7 +125,7 @@ class _MainPageState extends State<MainPage> {
                   // loading indicator at the bottom of the list
                   loadingImages
                       ? SliverToBoxAdapter(
-                          child: _buildLoadingIndicator(),
+                          child: _LoadingIndicator(Colors.grey[400]),
                         )
                       : null,
                   // filter null views
@@ -126,9 +140,7 @@ class _MainPageState extends State<MainPage> {
             TextField(
                 keyboardType: TextInputType.text,
                 decoration: InputDecoration(
-                    hintText: 'Search...',
-                    hintStyle: TextStyle(color: Colors.black54, fontSize: 17.0),
-                    border: InputBorder.none),
+                    hintText: 'Search...', border: InputBorder.none),
                 onSubmitted: (String keyword) =>
                     // search and display images associated to the keyword
                     _loadImages(keyword: keyword),
@@ -158,41 +170,71 @@ class _MainPageState extends State<MainPage> {
         backgroundColor: Colors.grey[50],
       );
 
-  /// Returns the loading indicator widget that is displayed during loading.
-  Widget _buildLoadingIndicator() => const Center(
-          child: Padding(
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(Colors.black87),
-        ),
-        padding: const EdgeInsets.all(16.0),
-      ));
+  /// Returns a StaggeredTile for a given [image].
+  StaggeredTile _buildStaggeredTile(UnsplashImage image, int columnCount) {
+    // calc image aspect ration
+    double aspectRatio =
+        image.getHeight().toDouble() / image.getWidth().toDouble();
+    // calc columnWidth
+    double columnWidth = MediaQuery.of(context).size.width / columnCount;
+    // not using [StaggeredTile.fit(1)] because during loading StaggeredGrid is really jumpy.
+    return StaggeredTile.extent(1, aspectRatio * columnWidth);
+  }
 
   /// Returns the grid that displays images.
   /// [orientation] can be used to adjust the grid column count.
-  Widget _buildImageGrid({orientation = Orientation.portrait}) => SliverPadding(
-        padding: const EdgeInsets.all(16.0),
-        sliver: SliverStaggeredGrid.countBuilder(
-          // set column count
-          crossAxisCount: orientation == Orientation.portrait ? 2 : 3,
-          itemCount: images.length,
-          // set itemBuilder
-          itemBuilder: (BuildContext context, int index) =>
-              _buildImageItemBuilder(index),
-          staggeredTileBuilder: (int index) => StaggeredTile.fit(1)
-              /*StaggeredTile.count(1, 1)*/,
-          mainAxisSpacing: 16.0,
-          crossAxisSpacing: 16.0,
-        ),
-      );
+  Widget _buildImageGrid({orientation = Orientation.portrait}) {
+    // calc columnCount based on orientation
+    int columnCount = orientation == Orientation.portrait ? 2 : 3;
+    // return staggered grid
+    return SliverPadding(
+      padding: const EdgeInsets.all(16.0),
+      sliver: SliverStaggeredGrid.countBuilder(
+        // set column count
+        crossAxisCount: columnCount,
+        itemCount: images.length,
+        // set itemBuilder
+        itemBuilder: (BuildContext context, int index) =>
+            _buildImageItemBuilder(index),
+        staggeredTileBuilder: (int index) =>
+            _buildStaggeredTile(images[index], columnCount),
+        mainAxisSpacing: 16.0,
+        crossAxisSpacing: 16.0,
+      ),
+    );
+  }
 
   /// Returns a FutureBuilder to load a [UnsplashImage] for a given [index].
   Widget _buildImageItemBuilder(int index) => FutureBuilder(
         // pass image loader
         future: _loadImage(index),
         builder: (context, snapshot) =>
-            // image loaded return InkWell
-            _buildImageCard(snapshot.data),
+            // image loaded return [_ImageTile]
+            _ImageTile(snapshot.data),
       );
+}
+
+/// A Widget wrapping a [CircularProgressIndicator] in [Center].
+class _LoadingIndicator extends StatelessWidget {
+  final Color color;
+
+  const _LoadingIndicator(this.color);
+
+  @override
+  Widget build(BuildContext context) => Center(
+          child: Padding(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(color),
+        ),
+        padding: const EdgeInsets.all(16.0),
+      ));
+}
+
+/// ImageTile displayed in StaggeredGridView.
+class _ImageTile extends StatelessWidget {
+  final UnsplashImage image;
+
+  const _ImageTile(this.image);
 
   /// Adds rounded corners to a given [widget].
   Widget _addRoundedCorners(Widget widget) =>
@@ -200,16 +242,23 @@ class _MainPageState extends State<MainPage> {
       ClipRRect(borderRadius: BorderRadius.circular(4.0), child: widget);
 
   /// Returns a placeholder to show until an image is loaded.
-  Widget _buildImagePlaceholder() => _addRoundedCorners(
-        Container(
-          color: Colors.grey[200],
-          child: _buildLoadingIndicator(),
-        ),
+  Widget _buildImagePlaceholder() => Container(
+        color: Colors.grey[200],
+        child: _LoadingIndicator(Colors.grey[400]),
       );
 
-  /// Build a card for displaying a given [image].
-  /// If given [image] is null then a grey placeholder is displayed.
-  Widget _buildImageCard(UnsplashImage image) => InkWell(
+  /// Returns a error placeholder to show until an image is loaded.
+  Widget _buildImageErrorWidget() => Container(
+        color: Colors.grey[200],
+        child: Center(
+            child: Icon(
+          Icons.broken_image,
+          color: Colors.grey[400],
+        )),
+      );
+
+  @override
+  Widget build(BuildContext context) => InkWell(
         onTap: () {
           // item onclick
           Navigator.of(context).push(
@@ -227,9 +276,9 @@ class _MainPageState extends State<MainPage> {
                 child: _addRoundedCorners(CachedNetworkImage(
                   imageUrl: image?.getSmallUrl(),
                   placeholder: (context, url) => _buildImagePlaceholder(),
+                  errorWidget: (context, url, obj) => _buildImageErrorWidget(),
                   fit: BoxFit.cover,
-                )),
-              )
+                )))
             : _buildImagePlaceholder(),
       );
 }
