@@ -1,3 +1,5 @@
+import 'package:date_format/date_format.dart';
+
 /// Model for Unsplash Image
 class UnsplashImage {
   var data;
@@ -8,36 +10,48 @@ class UnsplashImage {
 
   // Getter
 
-  getId() {
+  String getId() {
     return data['id'];
   }
 
-  createdAt() {
+  String createdAt() {
     return data['created_at'];
   }
 
-  getWidth() {
+  String createdAtFormatted() {
+    return formatDate(DateTime.parse(createdAt()), [dd, '. ', M, ' ', yyyy]);
+  }
+
+  String updatedAt() {
+    return data['updated_at'];
+  }
+
+  int getWidth() {
     return data['width'];
   }
 
-  getHeight() {
+  int getHeight() {
     return data['height'];
   }
 
-  getColor() {
+  String getColor() {
     return data['color'];
   }
 
-  getLikes() {
+  int getLikes() {
     return data['likes'];
   }
 
-  isLikedByUser() {
+  bool isLikedByUser() {
     return data['liked_by_user'];
   }
 
-  getDescription() {
+  String getDescription() {
     return data['description'];
+  }
+
+  String getAltDescription() {
+    return data['alt_description'];
   }
 
   UnsplashUser getUser() {
@@ -48,23 +62,23 @@ class UnsplashImage {
     return data['urls'];
   }
 
-  getRawUrl() {
+  String getRawUrl() {
     return getUrls()['raw'];
   }
 
-  getFullUrl() {
+  String getFullUrl() {
     return getUrls()['full'];
   }
 
-  getRegularUrl() {
+  String getRegularUrl() {
     return getUrls()['regular'];
   }
 
-  getSmallUrl() {
+  String getSmallUrl() {
     return getUrls()['small'];
   }
 
-  getThumbUrl() {
+  String getThumbUrl() {
     return getUrls()['thumb'];
   }
 
@@ -72,15 +86,15 @@ class UnsplashImage {
     return data['links'];
   }
 
-  getSelfLink() {
+  String getSelfLink() {
     return getLinks()['self'];
   }
 
-  getHtmlLink() {
+  String getHtmlLink() {
     return getLinks()['html'];
   }
 
-  getDownloadLink() {
+  String getDownloadLink() {
     return getLinks()['download'];
   }
 }
@@ -95,31 +109,31 @@ class UnsplashUser {
 
   // Getter
 
-  getId() {
+  String getId() {
     return data['id'];
   }
 
-  getUsername() {
+  String getUsername() {
     return data['username'];
   }
 
-  getFirstName() {
+  String getFirstName() {
     return data['first_name'];
   }
 
-  getLastName() {
+  String getLastName() {
     return data['last_name'];
   }
 
-  getInstagramUsername() {
+  String getInstagramUsername() {
     return data['instagram_username'];
   }
 
-  getTwitterUsername() {
+  String getTwitterUsername() {
     return data['twitter_username'];
   }
 
-  getPortfolioUrl() {
+  String getPortfolioUrl() {
     return data['portfolio_url'];
   }
 
@@ -127,15 +141,15 @@ class UnsplashUser {
     return data['profile_image'];
   }
 
-  getSmallProfileImage() {
+  String getSmallProfileImage() {
     return getProfileImages()['small'];
   }
 
-  getMediumProfileImage() {
+  String getMediumProfileImage() {
     return getProfileImages()['medium'];
   }
 
-  getLargeProfileImage() {
+  String getLargeProfileImage() {
     return getProfileImages()['large'];
   }
 
@@ -143,19 +157,19 @@ class UnsplashUser {
     return data['links'];
   }
 
-  getSelfLink() {
+  String getSelfLink() {
     return getLinks()['self'];
   }
 
-  getHtmlLink() {
+  String getHtmlLink() {
     return getLinks()['html'];
   }
 
-  getPhotosLink() {
+  String getPhotosLink() {
     return getLinks()['photos'];
   }
 
-  getLikesLink() {
+  String getLikesLink() {
     return getLinks()['likes'];
   }
 

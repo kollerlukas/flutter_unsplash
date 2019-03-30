@@ -1,20 +1,31 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:unsplash_client/keys.dart';
 import 'package:unsplash_client/models.dart';
 
 /// Helper class to interact with the Unsplash Api and provide [UnsplashImage].
 class UnsplashImageProvider {
+  /// Asynchronously loads a [UnsplashImage] for a given [id].
+  static Future<UnsplashImage> loadImage(String id) async {
+    String url = 'https://api.unsplash.com/photos/$id';
+    // receive image data from unsplash
+    var data = await _getImageData(url);
+    debugPrint('imagedata : $data');
+    // return image
+    return UnsplashImage(data);
+  }
+
   /// Asynchronously load a list of trending [UnsplashImage].
   /// Returns a list of [UnsplashImage].
   /// [page] is the page index for the api request.
   /// [perPage] sets the length of the returned list.
-  static Future<List> loadImages(
-      {int page = 1, int perPage = 10}) async {
+  static Future<List> loadImages({int page = 1, int perPage = 10}) async {
     String url = 'https://api.unsplash.com/photos?page=$page&per_page=$perPage';
     // receive image data from unsplash
     var data = await _getImageData(url);
+    debugPrint('data : $data');
     // generate UnsplashImage List from received data
     List<UnsplashImage> images =
         List<UnsplashImage>.generate(data.length, (index) {
