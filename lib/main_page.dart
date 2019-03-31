@@ -267,14 +267,14 @@ class _ImageTile extends StatelessWidget {
             MaterialPageRoute<Null>(
               builder: (BuildContext context) =>
                   // open [ImagePage] with the given image
-                  ImagePage(imageId: image.getId()),
+                  ImagePage(image: image),
             ),
           );
         },
         // Hero Widget for Hero animation with [ImagePage]
         child: image != null
             ? Hero(
-                tag: '${image?.getId()}',
+                tag: '${image.getId()}',
                 child: _addRoundedCorners(CachedNetworkImage(
                   imageUrl: image?.getSmallUrl(),
                   placeholder: (context, url) =>

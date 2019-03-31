@@ -4,9 +4,7 @@ import 'package:date_format/date_format.dart';
 class UnsplashImage {
   var data;
 
-  UnsplashImage(var data) {
-    this.data = data;
-  }
+  UnsplashImage(this.data);
 
   // Getter
 
@@ -24,6 +22,14 @@ class UnsplashImage {
 
   String updatedAt() {
     return data['updated_at'];
+  }
+
+  Location getLocation() {
+    return data['location'] != null ? Location(data['location']) : null;
+  }
+
+  Exif getExif() {
+    return data['exif'] != null ? Exif(data['exif']) : null;
   }
 
   int getWidth() {
@@ -103,9 +109,7 @@ class UnsplashImage {
 class UnsplashUser {
   var data;
 
-  UnsplashUser(var data) {
-    this.data = data;
-  }
+  UnsplashUser(this.data);
 
   // Getter
 
@@ -175,5 +179,53 @@ class UnsplashUser {
 
   getCurrentUserCollections() {
     return data['current_user_collections'];
+  }
+}
+
+/// Model for image location.
+class Location {
+  var data;
+
+  Location(this.data);
+
+  String getCity() {
+    return data['city'];
+  }
+
+  String getCountry() {
+    return data['country'];
+  }
+}
+
+/// Model for the exif data of an image.
+class Exif {
+  var data;
+
+  Exif(this.data);
+
+  // Getter
+
+  String getMake() {
+    return data['make'];
+  }
+
+  String getModel() {
+    return data['model'];
+  }
+
+  String getExposureTime() {
+    return data['exposure_time'];
+  }
+
+  String getAperture() {
+    return data['aperture'];
+  }
+
+  String getFocalLength() {
+    return data['focal_length'];
+  }
+
+  int getIso() {
+    return data['iso'];
   }
 }
