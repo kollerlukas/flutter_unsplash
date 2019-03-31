@@ -63,6 +63,7 @@ class _ImagePageState extends State<ImagePage> {
               icon: Icon(
                 Icons.info_outline,
                 color: Colors.white,
+
               ),
               tooltip: 'Image Info',
               onPressed: () => bottomSheetController = _showInfoBottomSheet()),
@@ -74,15 +75,6 @@ class _ImagePageState extends State<ImagePage> {
               ),
               tooltip: 'Open in Browser',
               onPressed: () => launch(image?.getHtmlLink())),
-          // set as wallpaper
-          IconButton(
-            icon: Icon(
-              Icons.file_download,
-              color: Colors.white,
-            ),
-            tooltip: 'Download Image',
-            onPressed: () => _downloadImage(),
-          ),
         ],
       );
 
@@ -113,13 +105,6 @@ class _ImagePageState extends State<ImagePage> {
         ],
       ),
     );
-  }
-
-  /// Downloads the image and saves it to local storage.
-  _downloadImage() async {
-    // TODO
-    Scaffold.of(context)
-        .showSnackBar(SnackBar(content: Text('not implemented yet!')));
   }
 
   /// Shows a BottomSheet containing image info.
