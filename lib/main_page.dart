@@ -1,10 +1,9 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:unsplash_client/image_page.dart';
 import 'package:unsplash_client/models.dart';
 import 'package:unsplash_client/unsplash_image_provider.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:unsplash_client/widget/image_tile.dart';
+import 'package:unsplash_client/widget/loading_indicator.dart';
 
 /// Screen for showing a collection of trending [UnsplashImage].
 class MainPage extends StatefulWidget {
@@ -114,23 +113,30 @@ class _MainPageState extends State<MainPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        body: OrientationBuilder(
-            builder: (context, orientation) => CustomScrollView(
-                    // put AppBar in NestedScrollView to have it sliver off on scrolling
-                    slivers: <Widget>[
-                  _buildSearchAppBar(),
-                  _buildImageGrid(orientation: orientation),
-                  // loading indicator at the bottom of the list
-                  loadingImages
-                      ? SliverToBoxAdapter(
-                          child: _LoadingIndicator(Colors.grey[400]),
-                        )
-                      : null,
-                  // filter null views
-                ].where((w) => w != null).toList())));
-  }
+  Widget build(BuildContext context) => WillPopScope(
+        onWillPop: () async {
+          if (keyword != null) {
+            _resetImages();
+            return false;
+          }
+          return true;
+        },
+        child: Scaffold(
+            body: OrientationBuilder(
+                builder: (context, orientation) => CustomScrollView(
+                        // put AppBar in NestedScrollView to have it sliver off on scrolling
+                        slivers: <Widget>[
+                      _buildSearchAppBar(),
+                      _buildImageGrid(orientation: orientation),
+                      // loading indicator at the bottom of the list
+                      loadingImages
+                          ? SliverToBoxAdapter(
+                              child: LoadingIndicator(Colors.grey[400]),
+                            )
+                          : null,
+                      // filter null views
+                    ].where((w) => w != null).toList()))),
+      );
 
   /// Returns the SearchAppBar.
   Widget _buildSearchAppBar() => SliverAppBar(
@@ -210,78 +216,6 @@ class _MainPageState extends State<MainPage> {
         future: _loadImage(index),
         builder: (context, snapshot) =>
             // image loaded return [_ImageTile]
-            _ImageTile(snapshot.data),
-      );
-}
-
-/// A Widget wrapping a [CircularProgressIndicator] in [Center].
-class _LoadingIndicator extends StatelessWidget {
-  final Color color;
-
-  const _LoadingIndicator(this.color);
-
-  @override
-  Widget build(BuildContext context) => Center(
-          child: Padding(
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(color),
-        ),
-        padding: const EdgeInsets.all(16.0),
-      ));
-}
-
-/// ImageTile displayed in StaggeredGridView.
-class _ImageTile extends StatelessWidget {
-  final UnsplashImage image;
-
-  const _ImageTile(this.image);
-
-  /// Adds rounded corners to a given [widget].
-  Widget _addRoundedCorners(Widget widget) =>
-      // wrap in ClipRRect to achieve rounded corners
-      ClipRRect(borderRadius: BorderRadius.circular(4.0), child: widget);
-
-  /// Returns a placeholder to show until an image is loaded.
-  Widget _buildImagePlaceholder({UnsplashImage image}) => Container(
-        color: image != null
-            ? Color(int.parse(image.getColor().substring(1, 7), radix: 16) +
-                0x64000000)
-            : Colors.grey[200],
-      );
-
-  /// Returns a error placeholder to show until an image is loaded.
-  Widget _buildImageErrorWidget() => Container(
-        color: Colors.grey[200],
-        child: Center(
-            child: Icon(
-          Icons.broken_image,
-          color: Colors.grey[400],
-        )),
-      );
-
-  @override
-  Widget build(BuildContext context) => InkWell(
-        onTap: () {
-          // item onclick
-          Navigator.of(context).push(
-            MaterialPageRoute<Null>(
-              builder: (BuildContext context) =>
-                  // open [ImagePage] with the given image
-                  ImagePage(image: image),
-            ),
-          );
-        },
-        // Hero Widget for Hero animation with [ImagePage]
-        child: image != null
-            ? Hero(
-                tag: '${image.getId()}',
-                child: _addRoundedCorners(CachedNetworkImage(
-                  imageUrl: image?.getSmallUrl(),
-                  placeholder: (context, url) =>
-                      _buildImagePlaceholder(image: image),
-                  errorWidget: (context, url, obj) => _buildImageErrorWidget(),
-                  fit: BoxFit.cover,
-                )))
-            : _buildImagePlaceholder(),
+            ImageTile(snapshot.data),
       );
 }
