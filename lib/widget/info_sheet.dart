@@ -10,7 +10,14 @@ class InfoSheet extends StatelessWidget {
   InfoSheet(this.image);
 
   @override
-  Widget build(BuildContext context) => Container(
+  Widget build(BuildContext context) => /*Container*/ Card(
+        margin: const EdgeInsets.only(top: 16.0),
+        elevation: 10.0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+              topLeft: const Radius.circular(10.0),
+              topRight: const Radius.circular(10.0)),
+        ),
         child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
@@ -43,20 +50,20 @@ class InfoSheet extends StatelessWidget {
                         ],
                       ),
                     ),
-                    // don't show description if null
+                    // show description
                     _buildDescriptionWidget(image.getDescription()),
-                    // don't show location if null
+                    // show location
                     _buildLocationWidget(image.getLocation()),
                     // show exif data
                     _buildExifWidget(image.getExif()),
                     // filter null views
                   ].where((w) => w != null).toList()
                 : <Widget>[LoadingIndicator(Colors.black26)]),
-        decoration: new BoxDecoration(
+        /*decoration: new BoxDecoration(
             color: Colors.grey[50],
             borderRadius: new BorderRadius.only(
                 topLeft: const Radius.circular(10.0),
-                topRight: const Radius.circular(10.0))),
+                topRight: const Radius.circular(10.0))),*/
       );
 
   /// Builds a round image widget displaying a profile image from a given [url].
