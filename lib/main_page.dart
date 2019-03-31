@@ -122,6 +122,7 @@ class _MainPageState extends State<MainPage> {
           return true;
         },
         child: Scaffold(
+            backgroundColor: Colors.grey[50],
             body: OrientationBuilder(
                 builder: (context, orientation) => CustomScrollView(
                         // put AppBar in NestedScrollView to have it sliver off on scrolling

@@ -14,8 +14,12 @@ class FlutterUnsplash extends StatelessWidget {
 
     return new MaterialApp(
       title: 'Flutter Unsplash',
-      theme: ThemeData(accentColor: Colors.grey[400]),
+      theme: ThemeData(
+        accentColor: Colors.grey[400],
+        canvasColor: Colors.transparent,
+      ),
       home: MainPage(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }

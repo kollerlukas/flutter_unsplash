@@ -53,6 +53,7 @@ class InfoSheet extends StatelessWidget {
                   ].where((w) => w != null).toList()
                 : <Widget>[LoadingIndicator(Colors.black26)]),
         decoration: new BoxDecoration(
+            color: Colors.grey[50],
             borderRadius: new BorderRadius.only(
                 topLeft: const Radius.circular(10.0),
                 topRight: const Radius.circular(10.0))),
@@ -137,52 +138,30 @@ class InfoSheet extends StatelessWidget {
                       )),
                   Row(
                     children: <Widget>[
-                      Padding(
-                        padding: EdgeInsets.only(
-                            left: 8.0, right: 8.0, top: 4.0, bottom: 4.0),
-                        child: Text(
-                          'ƒ${exif.getAperture()}',
-                          style: TextStyle(
-                              color: Colors.black26,
-                              fontSize: 12.0,
-                              fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      Padding(
-                          padding: EdgeInsets.only(
-                              left: 8.0, right: 8.0, top: 4.0, bottom: 4.0),
-                          child: Text(
-                            '${exif.getExposureTime()}',
-                            style: TextStyle(
-                                color: Colors.black26,
-                                fontSize: 12.0,
-                                fontWeight: FontWeight.bold),
-                          )),
-                      Padding(
-                          padding: EdgeInsets.only(
-                              left: 8.0, right: 8.0, top: 4.0, bottom: 4.0),
-                          child: Text(
-                            '${exif.getFocalLength()}mm',
-                            style: TextStyle(
-                                color: Colors.black26,
-                                fontSize: 12.0,
-                                fontWeight: FontWeight.bold),
-                          )),
-                      Padding(
-                          padding: EdgeInsets.only(
-                              left: 8.0, right: 8.0, top: 4.0, bottom: 4.0),
-                          child: Text(
-                            'ISO${exif.getIso()}',
-                            style: TextStyle(
-                                color: Colors.black26,
-                                fontSize: 12.0,
-                                fontWeight: FontWeight.bold),
-                          )),
+                      // display exif info
+                      _buildExifInfoItem('ƒ${exif.getAperture()}'),
+                      _buildExifInfoItem('${exif.getExposureTime()}'),
+                      _buildExifInfoItem('${exif.getFocalLength()}mm'),
+                      _buildExifInfoItem('ISO${exif.getIso()}'),
                     ],
                   ),
                 ],
               )
-            ],
+            ].where((w) => w != null).toList(),
+          ))
+      : null;
+
+  /// Builds exif info item that displays given [data].
+  Widget _buildExifInfoItem(String data) => data != null
+      ? Padding(
+          padding:
+              EdgeInsets.only(left: 8.0, right: 8.0, top: 4.0, bottom: 4.0),
+          child: Text(
+            data,
+            style: TextStyle(
+                color: Colors.black26,
+                fontSize: 12.0,
+                fontWeight: FontWeight.bold),
           ))
       : null;
 }
