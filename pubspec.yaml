@@ -21,5 +21,18 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
+  # launcher icons
+  flutter_launcher_icons: "^0.7.0"
+
+# specify launcher icons
+flutter_icons:
+  image_path_android: "assets/ic_launcher_android.png"
+  android: true # can specify file name here e.g. "ic_launcher"
+  image_path_ios: "assets/ic_launcher_ios.png"
+  ios: true # can specify file name here e.g. "My-Launcher-Icon"
+  # android adaptive icons only available for Android 8.0 devices and above
+  adaptive_icon_foreground: "assets/ic_launcher_foreground.xml"
+  adaptive_icon_background: "assets/ic_launcher_background.xml"
+
 flutter:
   uses-material-design: true
