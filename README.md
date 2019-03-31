@@ -1,4 +1,4 @@
-<img src="https://github.com/kollerlukas/Flutter_Unsplash/raw/master/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" alt="Screenshot Main"
+<img src="https://github.com/kollerlukas/Flutter_Unsplash/raw/master/assets/ic_launcher_android.png" alt="Icon"
 width="100">
 
 # Flutter Unsplash Client
@@ -27,4 +27,3 @@ class Keys {
   static String UNSPLASH_API_CLIENT_ID = 'YOUR_API_KEY';
 }
 ```
-
