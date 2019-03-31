@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/material.dart';
 import 'package:unsplash_client/keys.dart';
 import 'package:unsplash_client/models.dart';
 
@@ -12,7 +11,6 @@ class UnsplashImageProvider {
     String url = 'https://api.unsplash.com/photos/$id';
     // receive image data from unsplash
     var data = await _getImageData(url);
-    debugPrint('imagedata : $data');
     // return image
     return UnsplashImage(data);
   }
@@ -25,7 +23,6 @@ class UnsplashImageProvider {
     String url = 'https://api.unsplash.com/photos?page=$page&per_page=$perPage';
     // receive image data from unsplash
     var data = await _getImageData(url);
-    debugPrint('data : $data');
     // generate UnsplashImage List from received data
     List<UnsplashImage> images =
         List<UnsplashImage>.generate(data.length, (index) {
