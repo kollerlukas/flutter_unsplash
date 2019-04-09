@@ -1,3 +1,4 @@
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/c5e9b080c4ab4392b4d37bc74e99b6e5)](https://app.codacy.com/app/kollerlukas/flutter_unsplash?utm_source=github.com&utm_medium=referral&utm_content=kollerlukas/flutter_unsplash&utm_campaign=Badge_Grade_Dashboard)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 <img src="https://github.com/kollerlukas/Flutter_Unsplash/raw/master/assets/ic_launcher_android.png" alt="Icon"
