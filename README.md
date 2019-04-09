@@ -21,7 +21,7 @@ A simple Flutter app showing trending images from [Unsplash](https://unsplash.co
 <img src="https://github.com/kollerlukas/Flutter_Unsplash/raw/master/screenshots/ios_screenshot_search.png" alt="Screenshot Source" width="200">
 </div>
 
-## Provide an Api Key:
+## Provide an Api Key
 create new file `Keys.dart` containing your api key:
 ```dart
 class Keys {
